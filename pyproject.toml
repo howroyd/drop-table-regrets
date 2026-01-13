@@ -7,7 +7,7 @@ name = "drop-table-regrets"
 version = "0.1.0"
 description = "A Python/PostgreSQL playground for learning, benchmarking, and making questionable schema decisions"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 license = "GPL-2.0-only"
 license-files = ["LICENSE"]
 authors = [
@@ -15,8 +15,10 @@ authors = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent",
 ]
 dynamic = ["dependencies"]
