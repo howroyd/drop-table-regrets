@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run drop_table_regrets",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "drop_table_regrets.run",
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "console": "integratedTerminal",
+            "args": []
+        }
+    ]
+}
