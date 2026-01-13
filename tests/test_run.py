@@ -91,7 +91,7 @@ def test_load_dsn_missing_key_raises(tmp_path: Path, monkeypatch: pytest.MonkeyP
         run._load_dsn()
 
 
-def test_main_uses_mock_connection(
+def test_main_uses_fake_connection(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     fake_conn = FakeConnection()
