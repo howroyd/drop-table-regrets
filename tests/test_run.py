@@ -52,16 +52,22 @@ class FakeConnection:
     def __init__(self) -> None:
         self.cursor_obj = FakeCursor()
         self.closed = False
+        self.committed = False
 
     def __enter__(self) -> "FakeConnection":
         return self
 
     def __exit__(self, exc_type, exc, tb) -> bool:  # pragma: no cover - simple context plumbing
+        if exc_type is None:
+            self.commit()
         self.closed = True
         return False
 
     def cursor(self) -> FakeCursor:
         return self.cursor_obj
+
+    def commit(self) -> None:
+        self.committed = True
 
 
 def test_load_dsn_reads_value_from_env_file(
@@ -105,4 +111,5 @@ def test_main_uses_fake_connection(
     assert "from python" in out
     assert fake_conn.cursor_obj.calls[0][0].strip().upper().startswith("INSERT")
     assert fake_conn.cursor_obj.calls[1][0].strip().upper().startswith("SELECT")
+    assert fake_conn.committed is True
     assert fake_conn.closed is True
