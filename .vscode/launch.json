@@ -3,7 +3,7 @@
     "configurations": [
         {
             "name": "Run drop_table_regrets",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "drop_table_regrets.run",
             "justMyCode": true,

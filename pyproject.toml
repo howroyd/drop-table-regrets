@@ -22,7 +22,7 @@ classifiers = [
 dynamic = ["dependencies"]
 
 [project.scripts]
-drop-table-regrets = "drop_table_regrets.cli:main"
+drop-table-regrets = "drop_table_regrets.run:main"
 
 [project.optional-dependencies]
 dev = [
