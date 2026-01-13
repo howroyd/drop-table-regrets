@@ -20,8 +20,9 @@ cp .env.example .env
 # 3. Initialize database schema (run in psql against DATABASE_DSN)
 psql "$DATABASE_DSN" <<'SQL'
 CREATE TABLE IF NOT EXISTS hello (
-    id   serial PRIMARY KEY,
-    name text NOT NULL
+    id         serial PRIMARY KEY,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    msg        text NOT NULL
 );
 SQL
 
