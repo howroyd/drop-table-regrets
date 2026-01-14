@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -20,7 +20,7 @@ class FakeCursor:
 
         if normalized.startswith("INSERT"):
             msg = params[0]
-            created_at = datetime(1970, 1, 1, tzinfo=timezone.utc)
+            created_at = datetime(1970, 1, 1, tzinfo=UTC)
             row_id = self._next_id
             self._next_id += 1
             self._rows[row_id] = (created_at, msg)

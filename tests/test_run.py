@@ -1,8 +1,8 @@
 """Tests for drop_table_regrets.run using mocked database connections."""
 
 from collections.abc import Sequence
+from datetime import UTC, datetime
 from pathlib import Path
-from datetime import datetime, timezone
 from typing import Any
 
 import pytest
@@ -30,11 +30,11 @@ class FakeCursor:
 
         if normalized.startswith("INSERT"):
             self._last_message = params[0] if params else self._last_message
-            self._next_result = (self._last_id, datetime(1970, 1, 1, tzinfo=timezone.utc))
+            self._next_result = (self._last_id, datetime(1970, 1, 1, tzinfo=UTC))
         elif normalized.startswith("SELECT"):
             self._next_result = (
                 self._last_id,
-                datetime(1970, 1, 1, tzinfo=timezone.utc),
+                datetime(1970, 1, 1, tzinfo=UTC),
                 self._last_message,
             )
         else:
@@ -102,9 +102,7 @@ def test_load_dsn_missing_key_raises(tmp_path: Path, monkeypatch: pytest.MonkeyP
         run._load_dsn()
 
 
-def test_load_dsn_rewrites_psycopg_scheme(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_load_dsn_rewrites_psycopg_scheme(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     env_file = tmp_path / ".env"
     env_file.write_text(
         "DATABASE_DSN=postgresql+psycopg://local/test\n",
