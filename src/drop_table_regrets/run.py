@@ -1,7 +1,10 @@
 from pathlib import Path
 
 import dotenv
-import psycopg
+from rich import print as rich_print
+
+from drop_table_regrets import db
+from drop_table_regrets.repos import hello as hello_repo
 
 ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
 DSN_KEY = "DATABASE_DSN"
@@ -25,18 +28,13 @@ def _load_dsn() -> str:
 
 def main() -> None:
     dsn = _load_dsn()
-    with psycopg.connect(dsn) as conn:
-        with conn.cursor() as cur:
-            cur.execute("INSERT INTO hello (msg) VALUES (%s) RETURNING id", ("from python",))
+    with db.connect(dsn) as conn:
+        with db.transaction(conn) as cur:
+            created = hello_repo.create(cur, "from python")
 
-            next_record = cur.fetchone()
-            if next_record is None:
-                raise RuntimeError("Failed to insert new record into hello table.")
-            new_id = next_record[0]
-
-            cur.execute("SELECT id, created_at, msg FROM hello WHERE id = %s", (new_id,))
-            row = cur.fetchone()
-            print(row)
+        with db.transaction(conn) as cur:
+            row = hello_repo.get(cur, created.id)
+            rich_print(row)
 
 
 if __name__ == "__main__":

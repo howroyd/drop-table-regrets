@@ -28,10 +28,6 @@ python -m drop_table_regrets.run
 
 # (Optional) Tear down schema
 alembic downgrade base
-
-# (Optional) Convenience commands
-# make migrate
-# make downgrade
 ```
 
 ## Makefile shortcuts
