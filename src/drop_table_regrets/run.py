@@ -17,6 +17,9 @@ def _load_dsn() -> str:
     if not dsn:
         raise ValueError(f"{DSN_KEY} is not set in {ENV_PATH}")
 
+    if dsn.startswith("postgresql+psycopg://"):
+        return dsn.replace("postgresql+psycopg://", "postgresql://", 1)
+
     return dsn
 
 
@@ -25,7 +28,11 @@ def main() -> None:
     with psycopg.connect(dsn) as conn:
         with conn.cursor() as cur:
             cur.execute("INSERT INTO hello (msg) VALUES (%s) RETURNING id", ("from python",))
-            new_id = cur.fetchone()[0]
+
+            next_record = cur.fetchone()
+            if next_record is None:
+                raise RuntimeError("Failed to insert new record into hello table.")
+            new_id = next_record[0]
 
             cur.execute("SELECT id, created_at, msg FROM hello WHERE id = %s", (new_id,))
             row = cur.fetchone()
