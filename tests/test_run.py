@@ -1,12 +1,13 @@
 """Tests for drop_table_regrets.run using mocked database connections."""
 
 from collections.abc import Sequence
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import pytest
 
-from drop_table_regrets import run
+from drop_table_regrets import db, run
 
 
 class FakeCursor:
@@ -29,11 +30,11 @@ class FakeCursor:
 
         if normalized.startswith("INSERT"):
             self._last_message = params[0] if params else self._last_message
-            self._next_result = (self._last_id,)
+            self._next_result = (self._last_id, datetime(1970, 1, 1, tzinfo=UTC))
         elif normalized.startswith("SELECT"):
             self._next_result = (
                 self._last_id,
-                "1970-01-01T00:00:00Z",
+                datetime(1970, 1, 1, tzinfo=UTC),
                 self._last_message,
             )
         else:
@@ -53,6 +54,7 @@ class FakeConnection:
         self.cursor_obj = FakeCursor()
         self.closed = False
         self.committed = False
+        self.rolled_back = False
 
     def __enter__(self) -> "FakeConnection":
         return self
@@ -68,6 +70,9 @@ class FakeConnection:
 
     def commit(self) -> None:
         self.committed = True
+
+    def rollback(self) -> None:
+        self.rolled_back = True
 
 
 def test_load_dsn_reads_value_from_env_file(
@@ -97,13 +102,34 @@ def test_load_dsn_missing_key_raises(tmp_path: Path, monkeypatch: pytest.MonkeyP
         run._load_dsn()
 
 
+def test_load_dsn_rewrites_psycopg_scheme(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "DATABASE_DSN=postgresql+psycopg://local/test\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(run, "ENV_PATH", env_file)
+
+    assert run._load_dsn() == "postgresql://local/test"
+
+
+def test_transaction_rolls_back_on_error() -> None:
+    fake_conn = FakeConnection()
+
+    with pytest.raises(RuntimeError):
+        with db.transaction(fake_conn):
+            raise RuntimeError("boom")
+
+    assert fake_conn.rolled_back is True
+
+
 def test_main_uses_fake_connection(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     fake_conn = FakeConnection()
 
     monkeypatch.setattr(run, "_load_dsn", lambda: "postgresql://fake")
-    monkeypatch.setattr(run.psycopg, "connect", lambda dsn: fake_conn)
+    monkeypatch.setattr(run.db, "connect", lambda dsn: fake_conn)
 
     run.main()
 
